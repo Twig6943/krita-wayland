@@ -71,14 +71,12 @@ optdepends=('kimageformats5: PSD support'
             'libmypaint: support for MyPaint brushes'
             'poppler-qt5: PDF filter'
             'python-pyqt5: for the Python plugins')
-source=(https://github.com/Twig6943/krita-wayland/archive/refs/heads/main.zip{,.sig}
+source=(https://github.com/Twig6943/krita-wayland/archive/refs/heads/main.zip
         sip-6.8.patch)
 sha256sums=('SKIP'
-            'SKIP'
             'SKIP')
-validpgpkeys=('SKIP'  # Boudewijn Rempt <foundation@krita.org>
-              'SKIP'  # Dmitry Kazakov (main key) <dimula73@gmail.com>
-              'SKIP') # Stichting Krita Foundation <foundation@krita.org>
+validpgpkeys=('SKIP'
+              'SKIP'
 
 prepare() {
   patch -d $pkgname-$_pkgver -p1 < sip-6.8.patch
