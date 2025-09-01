@@ -40,7 +40,6 @@ jobs:
       - name: Build package with makepkg (non-root)
         run: |
           sudo -u builder bash -lc "
-            cd repo
             makepkg -s --noconfirm --skipinteg --skippgpcheck --skipchecksums
           "
 
