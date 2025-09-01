@@ -16,20 +16,19 @@ jobs:
       - name: Update system
         run: pacman -Syu --noconfirm
 
-      - name: Install deps from PKGBUILD
+      - name: Install package dependencies from PKGBUILD
         run: |
-          # extract depends + makedepends arrays
-          DEPENDS=$(source PKGBUILD && echo ${depends[@]} ${makedepends[@]})
-          pacman -S --noconfirm --needed $DEPENDS
+          cd $GITHUB_WORKSPACE
+          # Extract depends and makedepends arrays from PKGBUILD
+          depends=$(bash -c "source PKGBUILD && echo \${depends[@]} \${makedepends[@]}")
+          echo "Installing dependencies: $depends"
+          pacman -S --noconfirm --needed $depends
 
       - name: Build package with makepkg
         run: |
-          useradd -m builder
-          chown -R builder:builder .
-          sudo -u builder bash -lc "
-            cd $PWD
-            makepkg -s --noconfirm --skipinteg --skippgpcheck --skipchecksums
-          "
+          cd $GITHUB_WORKSPACE
+          # Run makepkg without sudo, since deps are already installed
+          makepkg -s --noconfirm --skipinteg --skippgpcheck --skipchecksums
 
       - name: Upload built package
         uses: actions/upload-artifact@v4
