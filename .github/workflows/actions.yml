@@ -35,6 +35,7 @@ jobs:
 
       - name: Build package with makepkg (non-root)
         run: |
+          git clone https://github.com/Twig6943/krita-wayland
           sudo -u builder bash -lc "
             cd $GITHUB_WORKSPACE
             makepkg -s --noconfirm --skipinteg --skippgpcheck --skipchecksums
