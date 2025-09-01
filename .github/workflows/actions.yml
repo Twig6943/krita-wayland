@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-      
+
       - name: Install git
         run: pacman -Sy --noconfirm git
 
@@ -37,6 +37,7 @@ jobs:
       - name: Create build user
         run: |
           useradd -m builder
+          chown -R builder:builder .
           chown -R builder:builder krita-wayland
 
       - name: Build package with makepkg (non-root)
