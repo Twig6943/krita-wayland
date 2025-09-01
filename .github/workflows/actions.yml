@@ -10,15 +10,19 @@ jobs:
       image: archlinux:base-devel
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Install git
+        run: pacman -Sy --noconfirm git
+
+      - name: Clone repository
+        run: |
+          git clone https://github.com/twig6943/krita-wayland
 
       - name: Update system
         run: pacman -Syu --noconfirm
 
       - name: Install package dependencies from PKGBUILD
         run: |
-          cd $GITHUB_WORKSPACE
+          cd repo
           deps=$(bash -c '
             source PKGBUILD
             echo "${depends[@]} ${makedepends[@]}"
@@ -31,13 +35,12 @@ jobs:
       - name: Create build user
         run: |
           useradd -m builder
-          chown -R builder:builder $GITHUB_WORKSPACE
+          chown -R builder:builder repo
 
       - name: Build package with makepkg (non-root)
         run: |
-          git clone https://github.com/Twig6943/krita-wayland
           sudo -u builder bash -lc "
-            cd $GITHUB_WORKSPACE
+            cd repo
             makepkg -s --noconfirm --skipinteg --skippgpcheck --skipchecksums
           "
 
@@ -45,4 +48,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: krita-pkg
-          path: "*.pkg.tar.zst"
+          path: repo/*.pkg.tar.zst
