@@ -1,62 +1,80 @@
-name: Build Krita (skip checks)
+name: Build Krita (Arch, skip checks)
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    name: Build Krita from repo
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:base-devel
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install build dependencies
+      - name: Prepare Arch environment
         run: |
-          sudo apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            build-essential \
+          pacman -Syu --noconfirm
+          # Install all build deps from PKGBUILD
+          pacman -S --noconfirm --needed \
+            base-devel \
             cmake \
-            ninja-build \
-            ccache \
-            pkg-config \
-            git \
-            curl \
-            python3 \
-            python3-pip \
-            python3-pyqt5 \
-            python3-sip \
-            qtbase5-dev \
-            qttools5-dev \
+            ninja \
+            boost \
+            eigen \
+            extra-cmake-modules \
+            immer \
+            kdoctools \
+            kseexpr \
+            lager \
+            libheif \
+            libjxl \
+            libmypaint \
+            poppler-qt5 \
+            python-pyqt5 \
+            qt5-tools \
+            sip \
+            xsimd \
+            zug \
+            exiv2 \
+            ffmpeg \
+            fftw \
+            fontconfig \
+            freetype2 \
+            fribidi \
+            giflib \
+            glibc \
+            gsl \
+            harfbuzz \
+            imath \
+            kcompletion5 \
+            kconfig5 \
+            kcoreaddons5 \
+            kcrash5 \
+            kguiaddons5 \
+            ki18n5 \
+            kitemviews5 \
+            kwidgetsaddons5 \
+            kwindowsystem5 \
+            lcms2 \
+            libjpeg-turbo \
+            libkdcraw5 \
+            libpng \
+            libtiff \
+            libunibreak \
+            libwebp \
+            libx11 \
+            mlt \
+            opencolorio \
+            openexr \
+            openjpeg2 \
+            qt5-base \
+            qt5-svg \
             qt5-wayland \
-            qttools5-dev-tools \
-            libqt5svg5-dev \
-            libqt5x11extras5-dev \
-            libboost-all-dev \
-            libpng-dev \
-            libjpeg-dev \
-            libtiff-dev \
-            libopenexr-dev \
-            libimath-dev \
-            libwebp-dev \
-            liblcms2-dev \
-            libgsl-dev \
-            libfftw3-dev \
-            libfreetype6-dev \
-            libfontconfig1-dev \
-            libharfbuzz-dev \
-            libgif-dev \
-            libpoppler-qt5-dev \
-            libglu1-mesa-dev \
-            libgl1-mesa-dev \
-            gettext
-
-      - name: Prepare ccache
-        run: |
-          mkdir -p ~/.ccache
-          export CCACHE_DIR=~/.ccache
-          ccache --max-size=5G || true
+            qt5-x11extras \
+            quazip-qt5 \
+            zlib
 
       - name: Apply sip-6.8.patch if present
         run: |
@@ -77,16 +95,13 @@ jobs:
             -DCMAKE_INSTALL_PREFIX=/usr
 
       - name: Build Krita
-        run: cmake --build build -j $(nproc)
+        run: cmake --build build -j$(nproc)
 
       - name: Install into package dir
         run: |
           rm -rf package
           mkdir -p package
           DESTDIR="$PWD/package" cmake --install build
-
-      - name: List installed files
-        run: ls -la package || true
 
       - name: Create archive
         run: |
