@@ -79,11 +79,11 @@ validpgpkeys=('SKIP'
               'SKIP')
 
 prepare() {
-  patch -d krita-wayland -p1 < sip-6.8.patch
+  patch -d krita-wayland-main -p1 < sip-6.8.patch
 }
 
 build() {
-  cmake -B build -S krita-wayland \
+  cmake -B build -S krita-wayland-main \
     -DBUILD_KRITA_QT_DESIGNER_PLUGINS=ON \
     -DBUILD_TESTING=OFF
   cmake --build build
