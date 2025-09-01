@@ -10,6 +10,9 @@ jobs:
       image: archlinux:base-devel
 
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
       - name: Install git
         run: pacman -Sy --noconfirm git
 
