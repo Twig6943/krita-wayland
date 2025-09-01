@@ -13,10 +13,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Update system and install tools
+      - name: Update system
+        run: pacman -Syu --noconfirm
+
+      - name: Install deps from PKGBUILD
         run: |
-          pacman -Syu --noconfirm
-          pacman -S --noconfirm git base-devel
+          # extract depends + makedepends arrays
+          DEPENDS=$(source PKGBUILD && echo ${depends[@]} ${makedepends[@]})
+          pacman -S --noconfirm --needed $DEPENDS
 
       - name: Build package with makepkg
         run: |
