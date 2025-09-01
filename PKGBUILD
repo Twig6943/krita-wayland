@@ -76,7 +76,7 @@ source=(https://github.com/Twig6943/krita-wayland/archive/refs/heads/main.zip
 sha256sums=('SKIP'
             'SKIP')
 validpgpkeys=('SKIP'
-              'SKIP'
+              'SKIP')
 
 prepare() {
   patch -d $pkgname-$_pkgver -p1 < sip-6.8.patch
