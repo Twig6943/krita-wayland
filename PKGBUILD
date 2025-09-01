@@ -78,9 +78,9 @@ sha256sums=('SKIP'
 validpgpkeys=('SKIP'
               'SKIP')
 
-prepare() {
-  patch -d krita-wayland-main -p1 < sip-6.8.patch
-}
+#prepare() {
+#  patch -d krita-wayland-main -p1 < sip-6.8.patch
+#}
 
 build() {
   cmake -B build -S krita-wayland-main \
