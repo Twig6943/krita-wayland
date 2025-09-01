@@ -1,0 +1,95 @@
+# Maintainer: Antonio Rojas <arojas@archlinux,org>
+
+pkgname=krita
+_pkgver=5.2.11
+pkgver=${_pkgver/-/}
+pkgrel=2
+pkgdesc='Edit and paint images'
+arch=(x86_64)
+url='https://krita.org'
+license=(GPL3)
+depends=(exiv2
+         ffmpeg
+         fftw
+         fontconfig
+         freetype2
+         fribidi
+         gcc-libs
+         giflib
+         glibc
+         gsl
+         harfbuzz
+         imath
+         kcompletion5
+         kconfig5
+         kcoreaddons5
+         kcrash5
+         kguiaddons5
+         ki18n5
+         kitemviews5
+         kwidgetsaddons5
+         kwindowsystem5
+         lcms2
+         libjpeg-turbo
+         libkdcraw5
+         libpng
+         libtiff
+         libunibreak
+         libwebp
+         libx11
+         mlt
+         opencolorio
+         openexr
+         openjpeg2
+         qt5-base
+         qt5-svg
+         qt5-x11extras
+         quazip-qt5
+         zlib)
+makedepends=(boost
+             eigen
+             extra-cmake-modules
+             immer
+             kdoctools5
+             kseexpr
+             lager
+             libheif
+             libjxl
+             libmypaint
+             poppler-qt5
+             python-pyqt5
+             qt5-tools
+             sip
+             xsimd
+             zug)
+optdepends=('kimageformats5: PSD support'
+            'krita-plugin-gmic: GMic plugin'
+            'kseexpr: SeExpr generator layer'
+            'libheif: HEIF filter'
+            'libjxl: JPEG-XL filter'
+            'libmypaint: support for MyPaint brushes'
+            'poppler-qt5: PDF filter'
+            'python-pyqt5: for the Python plugins')
+source=(https://download.kde.org/stable/krita/$_pkgver/$pkgname-$_pkgver.tar.gz{,.sig}
+        sip-6.8.patch)
+sha256sums=('19ac246a06e96f7f837b57f2e5b1abd51dd09f0c948df7077e08b3b2d360c50f'
+            'SKIP'
+            'bb3b503993030bb98a99c6a0376c65ee74d0c32c1e8932110698682eed1e3d3c')
+validpgpkeys=('05D00A8B73A686789E0A156858B9596C722EA3BD'  # Boudewijn Rempt <foundation@krita.org>
+              'E9FB29E74ADEACC5E3035B8AB69EB4CF7468332F'  # Dmitry Kazakov (main key) <dimula73@gmail.com>
+              '064182440C674D9F8D0F6F8B4DA79EDA231C852B') # Stichting Krita Foundation <foundation@krita.org>
+
+prepare() {
+  patch -d $pkgname-$_pkgver -p1 < sip-6.8.patch
+}
+
+build() {
+  cmake -B build -S $pkgname-$_pkgver \
+    -DBUILD_KRITA_QT_DESIGNER_PLUGINS=ON \
+    -DBUILD_TESTING=OFF
+  cmake --build build
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+}
