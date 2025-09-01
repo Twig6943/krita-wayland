@@ -1,0 +1,101 @@
+name: Build Krita (skip checks)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Krita from repo
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential \
+            cmake \
+            ninja-build \
+            ccache \
+            pkg-config \
+            git \
+            curl \
+            python3 \
+            python3-pip \
+            python3-pyqt5 \
+            python3-sip \
+            qtbase5-dev \
+            qttools5-dev \
+            qt5-wayland \
+            qttools5-dev-tools \
+            libqt5svg5-dev \
+            libqt5x11extras5-dev \
+            libboost-all-dev \
+            libpng-dev \
+            libjpeg-dev \
+            libtiff-dev \
+            libopenexr-dev \
+            libimath-dev \
+            libwebp-dev \
+            liblcms2-dev \
+            libgsl-dev \
+            libfftw3-dev \
+            libfreetype6-dev \
+            libfontconfig1-dev \
+            libharfbuzz-dev \
+            libgif-dev \
+            libpoppler-qt5-dev \
+            libglu1-mesa-dev \
+            libgl1-mesa-dev \
+            gettext
+
+      - name: Prepare ccache
+        run: |
+          mkdir -p ~/.ccache
+          export CCACHE_DIR=~/.ccache
+          ccache --max-size=5G || true
+
+      - name: Apply sip-6.8.patch if present
+        run: |
+          if [ -f sip-6.8.patch ]; then
+            echo "Applying sip-6.8.patch"
+            patch -p1 < sip-6.8.patch
+          else
+            echo "No sip-6.8.patch found in repository; skipping"
+          fi
+
+      - name: Configure with CMake
+        run: |
+          cmake -B build -S . \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_KRITA_QT_DESIGNER_PLUGINS=ON \
+            -DBUILD_TESTING=OFF \
+            -DCMAKE_INSTALL_PREFIX=/usr
+
+      - name: Build Krita
+        run: cmake --build build -j $(nproc)
+
+      - name: Install into package dir
+        run: |
+          rm -rf package
+          mkdir -p package
+          DESTDIR="$PWD/package" cmake --install build
+
+      - name: List installed files
+        run: ls -la package || true
+
+      - name: Create archive
+        run: |
+          ART="krita-built.tar.gz"
+          tar -C package -czf "$ART" .
+          echo "Created $ART"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: krita-built
+          path: krita-built.tar.gz
