@@ -1,4 +1,4 @@
-name: Build Krita (Arch, skip checks)
+name: Build Krita (Arch PKGBUILD)
 
 on:
   workflow_dispatch:
@@ -13,104 +13,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Prepare Arch environment
+      - name: Update system and install tools
         run: |
           pacman -Syu --noconfirm
-          # Install all build deps from PKGBUILD
-          pacman -S --noconfirm --needed \
-            base-devel \
-            cmake \
-            ninja \
-            boost \
-            eigen \
-            extra-cmake-modules \
-            immer \
-            kdoctools \
-            kseexpr \
-            lager \
-            libheif \
-            libjxl \
-            libmypaint \
-            poppler-qt5 \
-            python-pyqt5 \
-            qt5-tools \
-            sip \
-            xsimd \
-            zug \
-            exiv2 \
-            ffmpeg \
-            fftw \
-            fontconfig \
-            freetype2 \
-            fribidi \
-            giflib \
-            glibc \
-            gsl \
-            harfbuzz \
-            imath \
-            kcompletion5 \
-            kconfig5 \
-            kcoreaddons5 \
-            kcrash5 \
-            kguiaddons5 \
-            ki18n5 \
-            kitemviews5 \
-            kwidgetsaddons5 \
-            kwindowsystem5 \
-            lcms2 \
-            libjpeg-turbo \
-            libkdcraw5 \
-            libpng \
-            libtiff \
-            libunibreak \
-            libwebp \
-            libx11 \
-            mlt \
-            opencolorio \
-            openexr \
-            openjpeg2 \
-            qt5-base \
-            qt5-svg \
-            qt5-wayland \
-            qt5-x11extras \
-            quazip-qt5 \
-            zlib
+          pacman -S --noconfirm git base-devel
 
-      - name: Apply sip-6.8.patch if present
+      - name: Build package with makepkg
         run: |
-          if [ -f sip-6.8.patch ]; then
-            echo "Applying sip-6.8.patch"
-            patch -p1 < sip-6.8.patch
-          else
-            echo "No sip-6.8.patch found in repository; skipping"
-          fi
+          useradd -m builder
+          chown -R builder:builder .
+          sudo -u builder bash -lc "
+            cd $PWD
+            makepkg -s --noconfirm --skipinteg --skippgpcheck --skipchecksums
+          "
 
-      - name: Configure with CMake
-        run: |
-          cmake -B build -S . \
-            -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DBUILD_KRITA_QT_DESIGNER_PLUGINS=ON \
-            -DBUILD_TESTING=OFF \
-            -DCMAKE_INSTALL_PREFIX=/usr
-
-      - name: Build Krita
-        run: cmake --build build -j$(nproc)
-
-      - name: Install into package dir
-        run: |
-          rm -rf package
-          mkdir -p package
-          DESTDIR="$PWD/package" cmake --install build
-
-      - name: Create archive
-        run: |
-          ART="krita-built.tar.gz"
-          tar -C package -czf "$ART" .
-          echo "Created $ART"
-
-      - name: Upload artifact
+      - name: Upload built package
         uses: actions/upload-artifact@v4
         with:
-          name: krita-built
-          path: krita-built.tar.gz
+          name: krita-pkg
+          path: "*.pkg.tar.zst"
