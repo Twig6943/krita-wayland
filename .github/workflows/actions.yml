@@ -19,9 +19,14 @@ jobs:
       - name: Install package dependencies from PKGBUILD
         run: |
           cd $GITHUB_WORKSPACE
-          depends=$(bash -c "source PKGBUILD && echo ${depends[@]} ${makedepends[@]}")
-          echo "Installing dependencies: $depends"
-          pacman -S --noconfirm --needed $depends
+          deps=$(bash -c '
+            source PKGBUILD
+            echo "${depends[@]} ${makedepends[@]}"
+          ')
+          echo "Installing dependencies: $deps"
+          if [ -n "$deps" ]; then
+            pacman -S --noconfirm --needed $deps
+          fi
 
       - name: Create build user
         run: |
